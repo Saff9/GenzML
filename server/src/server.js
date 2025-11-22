@@ -36,3 +36,8 @@ app.listen(port, () => {
   console.log(`🚀 GenZAI Server listening on port ${port}`);
   console.log(`Allowing requests from: ${config.clientOriginUrl}`);
 });
+
+app.get("/", (req, res) => {
+  res.send("🔥 GenZAI server is running");
+});
+
