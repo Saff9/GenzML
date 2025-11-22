@@ -15,6 +15,9 @@ app.use(helmet());
 app.use(express.json());
 // 3. Enable CORS - only allows your frontend to make requests
 app.use(cors({ origin: config.clientOriginUrl }));
+
+app.set('trust proxy', 1);
+
 // 4. Apply global rate limiting
 app.use(securityMiddleware.limiter);
 
