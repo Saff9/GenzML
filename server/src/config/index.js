@@ -3,7 +3,10 @@ import 'dotenv/config';
 const config = {
   port: process.env.PORT,
   clientOriginUrl: process.env.CLIENT_ORIGIN_URL,
-  
+  grok: {
+  apiKey: process.env.GROK_API_KEY,
+},
+
   openai: {
     apiKey: process.env.OPENAI_API_KEY
   },
