@@ -1,62 +1,63 @@
 import axios from 'axios';
 import config from '../config/index.js';
 
-// Here, you can build logic to decide which API to use.
-// For now, we'll try Perplexity first, then fall back to OpenAI.
-// OpenRouter is great for accessing many models (like Claude) via one key.
-
+// Tries Perplexity first → falls back to Grok if Perplexity fails
 export const getBestTextResponse = async (message, history = []) => {
-  // --- Strategy 1: Try Perplexity (Good for web-aware answers) ---
+
+  // --- Strategy 1: Try Perplexity ---
   try {
     const response = await axios.post(
-      'https://api.perplexity.ai/chat/completions',
+      "https://api.perplexity.ai/chat/completions",
       {
-        model: 'llama-3-sonar-large-32k-online', // A powerful, web-enabled model
+        model: "llama-3-sonar-large-32k-online",
         messages: [
-          ...history, // Pass in previous chat history
-          { role: 'user', content: message },
+          ...history,
+          { role: "user", content: message },
         ],
       },
       {
         headers: {
-          'Authorization': `Bearer ${config.perplexity.apiKey}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${config.perplexity.apiKey}`,
+          "Content-Type": "application/json",
         },
       }
     );
+
     return {
-      source: 'Perplexity',
+      source: "Perplexity",
       text: response.data.choices[0].message.content,
     };
-  } catch (err) {
-    console.warn('Perplexity API failed, falling back to OpenAI...', err.message);
 
-    // --- Strategy 2: Fallback to OpenAI (Reliable all-rounder) ---
-    try {
-      const response = await axios.post(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          model: 'gpt-4o',
-          messages: [
-            ...history,
-            { role: 'user', content: message },
-          ],
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${config.openai.apiKey}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      return {
-        source: 'OpenAI',
-        text: response.data.choices[0].message.content,
-      };
-    } catch (err2) {
-      console.error('OpenAI API also failed:', err2.message);
-      throw new Error('All AI providers failed.');
-    }
+  } catch (err) {
+    console.warn("Perplexity API failed, falling back to Grok...", err.message);
   }
-  // TODO: Add a 3rd fallback to OpenRouter if needed
+
+  // --- Strategy 2: Fallback to Grok ---
+  try {
+    const response = await axios.post(
+      "https://api.x.ai/v1/chat/completions",
+      {
+        model: "grok-2-latest",
+        messages: [
+          ...history,
+          { role: "user", content: message },
+        ],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${config.grok.apiKey}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return {
+      source: "Grok",
+      text: response.data.choices[0].message.content,
+    };
+
+  } catch (err2) {
+    console.error("Grok API also failed:", err2.message);
+    throw new Error("All AI providers failed.");
+  }
 };
